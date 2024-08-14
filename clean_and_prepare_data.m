@@ -1,7 +1,7 @@
 function [ts_clean, parameters]=clean_and_prepare_data(dset_name,TR)
 
-% TR=2.2;dset_name='canada';
-% 
+% TR=1.5;dset_name='krakow';
+%
 % Files related to parcellation
 %glasser_label=table2array(readtable('/media/koba/MULTIBOOT/blindness_gradients/source/parcellations/glasser_fsaverage5_labels.txt'));
 [~, label_l, colortable_l]=read_annotation('/home/koba/micapipe/parcellations/lh.glasser-360_mics.annot');
@@ -69,7 +69,7 @@ participants=readtable([fileList(contains({fileList.name}',participants_string))
 % gm_nii_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/anat/SUBID_space-nativepro_T1w_brain_pve_1.nii.gz';
 % wm_nii_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/anat/SUBID_space-nativepro_T1w_brain_pve_2.nii.gz';
 % first_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/parc/SUBID_space-nativepro_T1w_atlas-subcortical.nii.gz';
-% 
+%
 % timeseries_path=strrep(timeseries_path,'DSET',dset_name);
 % fd_path=strrep(fd_path,'DSET',dset_name);
 % wm_path=strrep(wm_path,'DSET',dset_name);
@@ -89,7 +89,7 @@ addpath(genpath('/media/koba/MULTIBOOT/blindness_gradients/source/toolboxes/Brai
 reference_gradients=fetch_gradients();
 rmpath(genpath('/media/koba/MULTIBOOT/blindness_gradients/source/toolboxes/BrainStat-master'))
 
-for i=1:max(glasser_label) 
+for i=1:max(glasser_label)
     for j=1:size(reference_gradients,2)
         reference_gradients_reduced(i,j,:)=mean(squeeze(reference_gradients(glasser_label==i,j,:)),'omitmissing');
     end
@@ -116,7 +116,7 @@ for i=1:size(participants,1)
     % Postprocess
     lis=[fileList(contains({fileList.name}',fd_string))];
     fd=table2array(readtable([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name],"FileType","text",'NumHeaderLines',0));
-    
+
     lis=[fileList(contains({fileList.name}',wm_string))];
     wm=table2array(readtable([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name],"FileType","text",'NumHeaderLines',0));
 
@@ -160,7 +160,7 @@ end
 % Extract the relevant measures
 for i=1:size(participants,1)
     disp(['Calculating the parameters for subject ' num2str(i)])
-    % Demographics 
+    % Demographics
     parameters(i).id=[dset_name '_' participants.participant_id{i}];
     parameters(i).age=participants.age(i);
     parameters(i).sex=participants.sex{i};
@@ -191,7 +191,7 @@ for i=1:size(participants,1)
     wm_img=reshape(wm_img,[],1);
     wm_sum=sum(wm_img>0.5);
     parameters(i).wm=(wm_sum*dimensions(1)*dimensions(2)*dimensions(3));
-    
+
     lis=[fileList(contains({fileList.name}',first_string))];
     first_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
     dimensions=first_img.original.hdr.dime.pixdim(1:3);
@@ -216,7 +216,7 @@ for i=1:size(participants,1)
     lis=[fileList(contains({fileList.name}',thickness_path_left))];
     thickness_left=gifti([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
     thickness_left=thickness_left.cdata;
- 
+
     thickness_path_right=strrep(thickness_string,'HEMI','R');
     lis=[fileList(contains({fileList.name}',thickness_path_right))];
     thickness_right=gifti([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
@@ -229,13 +229,13 @@ for i=1:size(participants,1)
         thickness_roi(j,1)=mean(parameters(i).thickness_mp(glasser_label==j),'omitmissing');
     end
     parameters(i).thickness_roi_mp=thickness_roi;
-    
+
     % Curvature
     curvature_path_left=strrep(curvature_string,'HEMI','L');
     lis=[fileList(contains({fileList.name}',curvature_path_left))];
     curvature_left=gifti([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
     curvature_left=curvature_left.cdata;
- 
+
     curvature_path_right=strrep(curvature_string,'HEMI','R');
     lis=[fileList(contains({fileList.name}',curvature_path_right))];
     curvature_right=gifti([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
@@ -272,27 +272,40 @@ for i=1:size(participants,1)
     parameters(i).intrinsic_curvature=morph(:,9);
 
 
-    % Gradients and their explained variance
-    gradfit=GradientMaps('kernel','na','approach','dm','alignment','pa','n_components',10);
-    gradfit=gradfit.fit(corrmat,'reference',reference_gradients_reduced,'sparsity',80);
-    parameters(i).gradients_sp80_na=gradfit.aligned{1};
-    parameters(i).lambdas_sp80_na=gradfit.lambda{1}./sum(gradfit.lambda{1});
 
-    gradfit=GradientMaps('kernel','na','approach','dm','alignment','pa','n_components',10);
-    gradfit=gradfit.fit(corrmat,'reference',reference_gradients_reduced,'sparsity',90);
-    parameters(i).gradients_sp90_na=gradfit.aligned{1};
-    parameters(i).lambdas_sp90_na=gradfit.lambda{1}./sum(gradfit.lambda{1});
+    if sum(isnan(corrmat(:))) ==0
+        % Gradients and their explained variance
+        gradfit=GradientMaps('kernel','na','approach','dm','alignment','pa','n_components',10);
+        gradfit=gradfit.fit(corrmat,'reference',reference_gradients_reduced,'sparsity',80);
+        parameters(i).gradients_sp80_na=gradfit.aligned{1};
+        parameters(i).lambdas_sp80_na=gradfit.lambda{1}./sum(gradfit.lambda{1});
 
-    gradfit=GradientMaps('kernel','cs','approach','dm','alignment','pa','n_components',10);
-    gradfit=gradfit.fit(corrmat,'reference',reference_gradients_reduced,'sparsity',90);
-    parameters(i).gradients_sp90_cs=gradfit.aligned{1};
-    parameters(i).lambdas_sp90_cs=gradfit.lambda{1}./sum(gradfit.lambda{1});
+        gradfit=GradientMaps('kernel','na','approach','dm','alignment','pa','n_components',10);
+        gradfit=gradfit.fit(corrmat,'reference',reference_gradients_reduced,'sparsity',90);
+        parameters(i).gradients_sp90_na=gradfit.aligned{1};
+        parameters(i).lambdas_sp90_na=gradfit.lambda{1}./sum(gradfit.lambda{1});
+
+        gradfit=GradientMaps('kernel','cs','approach','dm','alignment','pa','n_components',10);
+        gradfit=gradfit.fit(corrmat,'reference',reference_gradients_reduced,'sparsity',90);
+        parameters(i).gradients_sp90_cs=gradfit.aligned{1};
+        parameters(i).lambdas_sp90_cs=gradfit.lambda{1}./sum(gradfit.lambda{1});
+    else
+        parameters(i).gradients_sp80_na=zeros(size(reference_gradients_reduced));
+        parameters(i).lambdas_sp80_na=zeros(17,1);
+
+        parameters(i).gradients_sp90_na=zeros(size(reference_gradients_reduced));
+        parameters(i).lambdas_sp90_na=zeros(17,1);
+
+        parameters(i).gradients_sp90_cs=zeros(size(reference_gradients_reduced));
+        parameters(i).lambdas_sp90_cs=zeros(17,1);
+    end
 
 end
 
 
-%% get the volumetrics old way 
-% Volumetrics
+
+    %% get the volumetrics old way
+    % Volumetrics
     % lis=[fileList(contains({fileList.name}',t1_string))];
     % t1_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
     % dimensions=t1_img.original.hdr.dime.pixdim(1:3);
@@ -300,7 +313,7 @@ end
     % t1_img=reshape(t1_img,[],1);
     % t1_sum=sum(t1_img);
     % parameters(i).parenchyma=(t1_sum*dimensions(1)*dimensions(2)*dimensions(3));
-    % 
+    %
     % lis=[fileList(contains({fileList.name}',gm_nii_string))];
     % gm_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
     % dimensions=gm_img.original.hdr.dime.pixdim(1:3);
@@ -308,7 +321,7 @@ end
     % gm_img=reshape(gm_img,[],1);
     % gm_sum=sum(gm_img>0.5);
     % parameters(i).gm=(gm_sum*dimensions(1)*dimensions(2)*dimensions(3));
-    % 
+    %
     % lis=[fileList(contains({fileList.name}',wm_nii_string))];
     % wm_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
     % dimensions=wm_img.original.hdr.dime.pixdim(1:3);
@@ -316,7 +329,7 @@ end
     % wm_img=reshape(wm_img,[],1);
     % wm_sum=sum(wm_img>0.5);
     % parameters(i).wm=(wm_sum*dimensions(1)*dimensions(2)*dimensions(3));
-    % 
+    %
     % lis=[fileList(contains({fileList.name}',first_string))];
     % first_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
     % dimensions=first_img.original.hdr.dime.pixdim(1:3);
