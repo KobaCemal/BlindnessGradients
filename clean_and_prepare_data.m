@@ -267,7 +267,7 @@ for i=1:size(participants,1)
     parameters(i).thickness_fs=morph(:,4);
     parameters(i).thickness_fs_sd=morph(:,5);
     parameters(i).rectified_curvature=morph(:,6);
-    parameters(i).rectified_curvature=morph(:,7);
+    parameters(i).rectified_curvature_gaussian=morph(:,7);
     parameters(i).folding_index=morph(:,8);
     parameters(i).intrinsic_curvature=morph(:,9);
 
