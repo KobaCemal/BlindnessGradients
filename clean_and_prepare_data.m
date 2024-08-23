@@ -1,6 +1,6 @@
 function [ts_clean, parameters]=clean_and_prepare_data(dset_name,TR)
 
-% TR=2.2;dset_name='canada';
+% TR=2.2;dset_name='krakow';
 %
 % Files related to parcellation
 %glasser_label=table2array(readtable('/media/koba/MULTIBOOT/blindness_gradients/source/parcellations/glasser_fsaverage5_labels.txt'));
@@ -273,11 +273,13 @@ for i=1:size(participants,1)
     parameters(i).intrinsic_curvature=morph(:,9);
 
     morphology_sulc_string_left=strrep(morphology_sulc_string,'HEMI','lh');
-    lis=[fileList(contains({fileList.name}',morphology_string_left))];
+    lis=[fileList(contains({fileList.name}',morphology_sulc_string_left))];
     morph_sulc_left=readmatrix([lis(contains({lis.folder}',participants.participant_id{i})).folder '/' lis(contains({lis.folder}',participants.participant_id{i})).name], 'FileType','text');
+   
     morphology_sulc_string_right=strrep(morphology_sulc_string,'HEMI','rh');
     lis=[fileList(contains({fileList.name}',morphology_sulc_string_right))];
     morph_sulc_right=readmatrix([lis(contains({lis.folder}',participants.participant_id{i})).folder '/' lis(contains({lis.folder}',participants.participant_id{i})).name], 'FileType','text');
+   
     morph=[morph_sulc_left(2:end,:);morph_sulc_right(2:end,:)];
     parameters(i).sulcal_depth=morph(:,4);
 
