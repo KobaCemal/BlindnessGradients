@@ -57,34 +57,6 @@ morphology_vertex_string='HEMI.MORPH_fsaverage5.mgh';
 participants=readtable([fileList(contains({fileList.name}',participants_string)).folder '/'  fileList(contains({fileList.name}',participants_string)).name]);
 
 
-%participants_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/participants.csv';
-%timeseries_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/func/desc-se_task-rest_bold/surf/SUBID_hemi-HEMI_surf-fsnative.func.gii';
-% fd_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/func/desc-se_task-rest_bold/volumetric/SUBID_space-func_desc-se_metric_FD.1D';
-% wm_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/func/desc-se_task-rest_bold/volumetric/SUBID_space-func_desc-se_pve_WM.txt';
-% csf_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/func/desc-se_task-rest_bold/volumetric/SUBID_space-func_desc-se_pve_CSF.txt';
-% motion_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/func/desc-se_task-rest_bold/volumetric/SUBID_space-func_desc-se.1D';
-% thickness_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/maps/SUBID_hemi-HEMI_surf-fsaverage5_label-thickness.func.gii';
-% curvature_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/maps/SUBID_hemi-HEMI_surf-fsaverage5_label-curv.func.gii';
-% gd_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/dist/SUBID_atlas-glasser-360_GD.shape.gii';
-% t1_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/anat/SUBID_space-nativepro_T1w_brain_mask.nii.gz';
-% gm_nii_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/anat/SUBID_space-nativepro_T1w_brain_pve_1.nii.gz';
-% wm_nii_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/anat/SUBID_space-nativepro_T1w_brain_pve_2.nii.gz';
-% first_path='/media/koba/MULTIBOOT/blindness_gradients/datasets/DSET/derivatives/micapipe_v0.2.0/SUBID/parc/SUBID_space-nativepro_T1w_atlas-subcortical.nii.gz';
-%
-% timeseries_path=strrep(timeseries_path,'DSET',dset_name);
-% fd_path=strrep(fd_path,'DSET',dset_name);
-% wm_path=strrep(wm_path,'DSET',dset_name);
-% csf_path=strrep(csf_path,'DSET',dset_name);
-% motion_path=strrep(motion_path,'DSET',dset_name);
-% thickness_path=strrep(thickness_path,'DSET',dset_name);
-% curvature_path=strrep(curvature_path,'DSET',dset_name);
-% gd_path=strrep(gd_path,'DSET',dset_name);
-% t1_path=strrep(t1_path,'DSET',dset_name);
-% gm_nii_path=strrep(gm_nii_path,'DSET',dset_name);
-% wm_nii_path=strrep(wm_nii_path,'DSET',dset_name);
-% first_path=strrep(first_path,'DSET',dset_name);
-
-
 % Calculate the reference gradients
 addpath(genpath('/media/koba/MULTIBOOT/blindness_gradients/source/toolboxes/BrainStat-master'))
 reference_gradients=fetch_gradients();
