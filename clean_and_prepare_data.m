@@ -1,6 +1,6 @@
 function [ts_clean, parameters]=clean_and_prepare_data(dset_name,TR)
 
-% TR=2.2;dset_name='krakow';
+% TR=2.2;dset_name='baltimore';
 %
 % Files related to parcellation
 %glasser_label=table2array(readtable('/media/koba/MULTIBOOT/blindness_gradients/source/parcellations/glasser_fsaverage5_labels.txt'));
@@ -50,7 +50,7 @@ wm_nii_string='_space-nativepro_T1w_brain_pve_2.nii.gz';
 first_string='_space-nativepro_T1w_atlas-subcortical.nii.gz';
 morphology_string='HEMI.glasser.stats';
 morphology_sulc_string='HEMI.glasser_sulc.stats';
-
+morphology_vertex_string='HEMI.MORPH_fsaverage5.mgh';
 
 
 
@@ -275,16 +275,52 @@ for i=1:size(participants,1)
     morphology_sulc_string_left=strrep(morphology_sulc_string,'HEMI','lh');
     lis=[fileList(contains({fileList.name}',morphology_sulc_string_left))];
     morph_sulc_left=readmatrix([lis(contains({lis.folder}',participants.participant_id{i})).folder '/' lis(contains({lis.folder}',participants.participant_id{i})).name], 'FileType','text');
-   
+
     morphology_sulc_string_right=strrep(morphology_sulc_string,'HEMI','rh');
     lis=[fileList(contains({fileList.name}',morphology_sulc_string_right))];
     morph_sulc_right=readmatrix([lis(contains({lis.folder}',participants.participant_id{i})).folder '/' lis(contains({lis.folder}',participants.participant_id{i})).name], 'FileType','text');
-   
+
     morph=[morph_sulc_left(2:end,:);morph_sulc_right(2:end,:)];
     parameters(i).sulcal_depth=morph(:,4);
 
+    morphology_vertex_string_left=strrep(morphology_vertex_string,'HEMI','lh');
+    morphology_vertex_string_left=strrep(morphology_vertex_string_left,'MORPH','sulc');
+    lis=[fileList(contains({fileList.name}',morphology_vertex_string_left))];
+    morphology_vertex_left=gifti([lis(contains({lis.folder}',participants.participant_id{i})).folder '/' lis(contains({lis.folder}',participants.participant_id{i})).name]);
+    morph_left=morphology_vertex_left.cdata;
 
+    morphology_vertex_string_right=strrep(morphology_vertex_string,'HEMI','rh');
+    morphology_vertex_string_right=strrep(morphology_vertex_string_right,'MORPH','sulc');
+    lis=[fileList(contains({fileList.name}',morphology_vertex_string_right))];
+    morphology_vertex_right=gifti([lis(contains({lis.folder}',participants.participant_id{i})).folder '/' lis(contains({lis.folder}',participants.participant_id{i})).name]);
+    morph_right=morphology_vertex_right.cdata;
+    parameters(i).sulcal_depth_vertex=[morph_left;morph_right];
 
+    morphology_vertex_string_left=strrep(morphology_vertex_string,'HEMI','lh');
+    morphology_vertex_string_left=strrep(morphology_vertex_string_left,'MORPH','area');
+    lis=[fileList(contains({fileList.name}',morphology_vertex_string_left))];
+    morphology_vertex_left=gifti([lis(contains({lis.folder}',participants.participant_id{i})).folder '/' lis(contains({lis.folder}',participants.participant_id{i})).name]);
+    morph_left=morphology_vertex_left.cdata;
+
+    morphology_vertex_string_right=strrep(morphology_vertex_string,'HEMI','rh');
+    morphology_vertex_string_right=strrep(morphology_vertex_string_right,'MORPH','area');
+    lis=[fileList(contains({fileList.name}',morphology_vertex_string_right))];
+    morphology_vertex_right=gifti([lis(contains({lis.folder}',participants.participant_id{i})).folder '/' lis(contains({lis.folder}',participants.participant_id{i})).name]);
+    morph_right=morphology_vertex_right.cdata;
+    parameters(i).area_vertex=[morph_left;morph_right];
+
+    morphology_vertex_string_left=strrep(morphology_vertex_string,'HEMI','lh');
+    morphology_vertex_string_left=strrep(morphology_vertex_string_left,'MORPH','volume');
+    lis=[fileList(contains({fileList.name}',morphology_vertex_string_left))];
+    morphology_vertex_left=gifti([lis(contains({lis.folder}',participants.participant_id{i})).folder '/' lis(contains({lis.folder}',participants.participant_id{i})).name]);
+    morph_left=morphology_vertex_left.cdata;
+
+    morphology_vertex_string_right=strrep(morphology_vertex_string,'HEMI','rh');
+    morphology_vertex_string_right=strrep(morphology_vertex_string_right,'MORPH','volume');
+    lis=[fileList(contains({fileList.name}',morphology_vertex_string_right))];
+    morphology_vertex_right=gifti([lis(contains({lis.folder}',participants.participant_id{i})).folder '/' lis(contains({lis.folder}',participants.participant_id{i})).name]);
+    morph_right=morphology_vertex_right.cdata;
+    parameters(i).volume_vertex=[morph_left;morph_right];
 
     if sum(isnan(corrmat(:))) ==0
         % Gradients and their explained variance
@@ -317,40 +353,40 @@ end
 
 
 
-    %% get the volumetrics old way
-    % Volumetrics
-    % lis=[fileList(contains({fileList.name}',t1_string))];
-    % t1_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
-    % dimensions=t1_img.original.hdr.dime.pixdim(1:3);
-    % t1_img=t1_img.img;
-    % t1_img=reshape(t1_img,[],1);
-    % t1_sum=sum(t1_img);
-    % parameters(i).parenchyma=(t1_sum*dimensions(1)*dimensions(2)*dimensions(3));
-    %
-    % lis=[fileList(contains({fileList.name}',gm_nii_string))];
-    % gm_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
-    % dimensions=gm_img.original.hdr.dime.pixdim(1:3);
-    % gm_img=gm_img.img;
-    % gm_img=reshape(gm_img,[],1);
-    % gm_sum=sum(gm_img>0.5);
-    % parameters(i).gm=(gm_sum*dimensions(1)*dimensions(2)*dimensions(3));
-    %
-    % lis=[fileList(contains({fileList.name}',wm_nii_string))];
-    % wm_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
-    % dimensions=wm_img.original.hdr.dime.pixdim(1:3);
-    % wm_img=wm_img.img;
-    % wm_img=reshape(wm_img,[],1);
-    % wm_sum=sum(wm_img>0.5);
-    % parameters(i).wm=(wm_sum*dimensions(1)*dimensions(2)*dimensions(3));
-    %
-    % lis=[fileList(contains({fileList.name}',first_string))];
-    % first_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
-    % dimensions=first_img.original.hdr.dime.pixdim(1:3);
-    % first_img=first_img.img;
-    % first_img=reshape(first_img,[],1);
-    % for j=1:length(subcortical_names)
-    %     subcorticals_volume(j,1)=sum(first_img==subcortical_labels(j))*dimensions(1)*dimensions(2)*dimensions(3);
-    % end
-    % parameters(i).subcorticals=subcorticals_volume;
+%% get the volumetrics old way
+% Volumetrics
+% lis=[fileList(contains({fileList.name}',t1_string))];
+% t1_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
+% dimensions=t1_img.original.hdr.dime.pixdim(1:3);
+% t1_img=t1_img.img;
+% t1_img=reshape(t1_img,[],1);
+% t1_sum=sum(t1_img);
+% parameters(i).parenchyma=(t1_sum*dimensions(1)*dimensions(2)*dimensions(3));
+%
+% lis=[fileList(contains({fileList.name}',gm_nii_string))];
+% gm_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
+% dimensions=gm_img.original.hdr.dime.pixdim(1:3);
+% gm_img=gm_img.img;
+% gm_img=reshape(gm_img,[],1);
+% gm_sum=sum(gm_img>0.5);
+% parameters(i).gm=(gm_sum*dimensions(1)*dimensions(2)*dimensions(3));
+%
+% lis=[fileList(contains({fileList.name}',wm_nii_string))];
+% wm_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
+% dimensions=wm_img.original.hdr.dime.pixdim(1:3);
+% wm_img=wm_img.img;
+% wm_img=reshape(wm_img,[],1);
+% wm_sum=sum(wm_img>0.5);
+% parameters(i).wm=(wm_sum*dimensions(1)*dimensions(2)*dimensions(3));
+%
+% lis=[fileList(contains({fileList.name}',first_string))];
+% first_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
+% dimensions=first_img.original.hdr.dime.pixdim(1:3);
+% first_img=first_img.img;
+% first_img=reshape(first_img,[],1);
+% for j=1:length(subcortical_names)
+%     subcorticals_volume(j,1)=sum(first_img==subcortical_labels(j))*dimensions(1)*dimensions(2)*dimensions(3);
+% end
+% parameters(i).subcorticals=subcorticals_volume;
 
 
