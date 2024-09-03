@@ -453,3 +453,30 @@ plot_hemispheres([xx(:,1) yy(:,1) (xx(:,1)-yy(:,1))], {surf_lh,surf_rh},'parcell
 plot_hemispheres([xx(:,2) yy(:,2) (xx(:,2)-yy(:,2))], {surf_lh,surf_rh},'parcellation',glasser_label,'labeltext', {'CB','SC', 'Difference'});
 plot_hemispheres([xx(:,3) yy(:,3) (xx(:,3)-yy(:,3))], {surf_lh,surf_rh},'parcellation',glasser_label,'labeltext', {'CB','SC', 'Difference'});
 
+
+
+mean(abs(xx(:,1:3)))
+std(abs(xx(:,1:3)))
+
+mean(abs(yy(:,1:3)))
+std(abs(yy(:,1:3)))
+
+
+[h,p,~,stats]=ttest2(xx(:,1),xx(:,2))
+
+[h,p,~,stats]=ttest2(xx(:,1),yy(:,1))
+
+[h,p,~,stats]=ttest2(yy(:,1),yy(:,2))
+
+[h,p,~,stats]=ttest2(xx(:,2),yy(:,2))
+
+[h,p,~,stats]=ttest2(xx(:,3),yy(:,3))
+[h,p,~,stats]=ttest2(yy(:,2),yy(:,3))
+
+[a,b]=corr(xx(:,1),mean(gradients_all(strcmp({parameters_subset.group}','SC'),:,1))','type','Spearman')
+[a,b]=corr(yy(:,1),mean(gradients_all(strcmp({parameters_subset.group}','CB'),:,1))','type','Spearman')
+[a,b]=corr(xx(:,2),mean(gradients_all(strcmp({parameters_subset.group}','SC'),:,2))','type','Spearman')
+[a,b]=corr(yy(:,2),mean(gradients_all(strcmp({parameters_subset.group}','CB'),:,2))','type','Spearman')
+[a,b]=corr(xx(:,3),mean(gradients_all(strcmp({parameters_subset.group}','SC'),:,3))','type','Spearman')
+[a,b]=corr(yy(:,3),mean(gradients_all(strcmp({parameters_subset.group}','CB'),:,2))','type','Spearman')
+% mean_structural_sc=mean(structural_harmonized(strcmp({parameters_2.group}','SC'),:))';
