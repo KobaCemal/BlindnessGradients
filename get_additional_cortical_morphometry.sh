@@ -20,9 +20,9 @@ do
     do 
         for hemi in lh rh
         do 
-        echo "=========================================== Processing sub $sub $lh $morph"
-        mri_convert $SUBJECTS_DIR/"$sub"/surf/"$hemi"."$morph" $SUBJECTS_DIR/"$sub"/surf/"$hemi"."$morph"_fsnative.mgh
-        mri_surf2surf --s "$sub" --sval $SUBJECTS_DIR/"$sub"/surf/"$hemi"."$morph"_fsnative.mgh --trgsubject fsaverage5 --tval $SUBJECTS_DIR/$sub/surf/"$hemi"."$morph"_fsaverage5.mgh --hemi "$hemi"
+            echo "=========================================== Processing sub $sub $lh $morph"
+            mri_convert $SUBJECTS_DIR/"$sub"/surf/"$hemi"."$morph" $SUBJECTS_DIR/"$sub"/surf/"$hemi"."$morph"_fsnative.mgh
+            mri_surf2surf --s "$sub" --sval $SUBJECTS_DIR/"$sub"/surf/"$hemi"."$morph"_fsnative.mgh --trgsubject fsaverage5 --tval $SUBJECTS_DIR/$sub/surf/"$hemi"."$morph"_fsaverage5.mgh --hemi "$hemi"
         done
     done
 done
