@@ -1,10 +1,12 @@
+% This function cleans the functional data in fsaverage5 mesh and calculates parameters of interest.
+
 function [ts_clean, parameters]=clean_and_prepare_data(dset_name,TR)
 
 % TR=2.2;dset_name='baltimore';
 %
 % Files related to parcellation
 %glasser_label=table2array(readtable('/media/koba/MULTIBOOT/blindness_gradients/source/parcellations/glasser_fsaverage5_labels.txt'));
-[~, label_l, colortable_l]=read_annotation('/home/koba/micapipe/parcellations/lh.glasser-360_mics.annot');
+[~, label_l, colortable_l]=read_annotation('/home/koba/micapipe/parcellations/lh.glasser-360_mics.annot'); % function from freesurfer
 [~, label_r, colortable_r]=read_annotation('/home/koba/micapipe/parcellations/rh.glasser-360_mics.annot');
 for i=1:size(colortable_l.table,1)
     label_l(label_l==colortable_l.table(i,5))=i;
@@ -34,7 +36,7 @@ fileList = dir(fullfile(dset_path, '**', '*'));
 fileList([fileList.isdir].' == 1) = [];
 
 
-
+% set file extensions
 participants_string='participants.csv';
 timeseries_string='_hemi-HEMI_surf-fsaverage5.func.gii';
 fd_string='_space-func_desc-se_pve_WM.txt';
@@ -69,10 +71,11 @@ for i=1:max(glasser_label)
 end
 
 % Clean the time series
-for i=1:size(participants,1)
+for i=1:size(participants,1)  % goes over each participant
 
-    disp(['Cleaning the time series of subject ' num2str(i) ])
-
+    disp(['Cleaning the time series of subject ' num2str(I) ])
+    
+    % Load the time series from bothe hemispheres 
     timeseries_path_right=strrep(timeseries_string,'HEMI','R');
     lis=[fileList(contains({fileList.name}',timeseries_path_right))];
     timeseries_right=gifti([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
@@ -86,7 +89,7 @@ for i=1:size(participants,1)
     timeseries=[timeseries_left;timeseries_right];
     clear timeseries_left timeseries_right
 
-    % Postprocess
+    % Collect the regressors of no interest
     lis=[fileList(contains({fileList.name}',fd_string))];
     fd=table2array(readtable([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name],"FileType","text",'NumHeaderLines',0));
 
@@ -108,18 +111,19 @@ for i=1:size(participants,1)
     ortvec_diff_power=ortvec_diff.^2;
     linear_trend=[1:size(timeseries,2)]';
     confounds=[fd ortvec ortvec_diff ortvec_power ortvec_diff_power linear_trend];
-
+    % Remove the regressors of no interest and band-pass the residuals
     timeseries_clean=zeros(size(timeseries));
     for j=1:size(timeseries,1)
 
         [~,~,residuals] = regress(timeseries(j,:)',[ones(size(timeseries,2),1) confounds]);
         timeseries_clean(j,:) = filter(b, a, residuals);
     end
+    % Save the clean time series
     ts_clean(i,:,:)=timeseries_clean;
 
 end
 
-% Parcellate the time series
+% Parcellate the time series based on Glasser atlas
 ts_clean_reduced=zeros(size(ts_clean,1),max(glasser_label),size(ts_clean,3));
 for i=1:size(participants,1)
     disp(['Reducing the time series for subject ' num2str(i)])
@@ -149,6 +153,7 @@ for i=1:size(participants,1)
     t1_sum=sum(t1_img);
     parameters(i).parenchyma=(t1_sum*dimensions(1)*dimensions(2)*dimensions(3));
 
+    % Gray matter volume
     lis=[fileList(contains({fileList.name}',gm_nii_string))];
     gm_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
     dimensions=gm_img.original.hdr.dime.pixdim(1:3);
@@ -157,6 +162,7 @@ for i=1:size(participants,1)
     gm_sum=sum(gm_img>0.5);
     parameters(i).gm=(gm_sum*dimensions(1)*dimensions(2)*dimensions(3));
 
+    % White matter volume
     lis=[fileList(contains({fileList.name}',wm_nii_string))];
     wm_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
     dimensions=wm_img.original.hdr.dime.pixdim(1:3);
@@ -165,6 +171,7 @@ for i=1:size(participants,1)
     wm_sum=sum(wm_img>0.5);
     parameters(i).wm=(wm_sum*dimensions(1)*dimensions(2)*dimensions(3));
 
+    % Volume of the subcortical structures
     lis=[fileList(contains({fileList.name}',first_string))];
     first_img=load_nii([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
     dimensions=first_img.original.hdr.dime.pixdim(1:3);
@@ -179,12 +186,12 @@ for i=1:size(participants,1)
 
 
 
-    % Correlation matrix
+    % Functional orrelation matrix
     corrmat=atanh(corr(squeeze(ts_clean_reduced(i,:,:))'));
     corrmat(isinf(corrmat))=1;
     parameters(i).corrmat=corrmat;
 
-    % Thickness
+    % Cortical thickness
     thickness_path_left=strrep(thickness_string,'HEMI','L');
     lis=[fileList(contains({fileList.name}',thickness_path_left))];
     thickness_left=gifti([lis(contains({lis.name}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
@@ -222,7 +229,7 @@ for i=1:size(participants,1)
     end
     parameters(i).curvature_roi_mp=curvature_roi;
 
-    % GD
+    % Geodesic distance
     lis=[fileList(contains({fileList.name}',gd_string))];
     gd=gifti([lis(contains({lis.folder}',participants.participant_id{i})).folder '/' lis(contains({lis.name}',participants.participant_id{i})).name]);
     parameters(i).gd=gd.cdata;
