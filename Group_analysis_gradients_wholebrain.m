@@ -236,7 +236,6 @@ fdr_bh(controlXcb_p)
 
 %% Rank and distance
 
-% Residuals are not used because some orders may get flipped? 
 % residuals=zeros(size(gradients_all));
 % for i=1:size(gradients_all,2)
 %     for j=1:size(gradients_all,3)
