@@ -1,4 +1,5 @@
 clear
+% Load the parameters of all datasets
 parameters1=load('/media/koba/MULTIBOOT/blindness_gradients/datasets/canada/derivatives/parameters.mat');
 parameters1=parameters1.parameters;
 parameters2=load('/media/koba/MULTIBOOT/blindness_gradients/datasets/baltimore/derivatives/parameters.mat');
@@ -108,7 +109,6 @@ for i=1:size(tissues,2)
     ylabel('Z score')
     % ylim([-3,3])
 end
-
 
 subplot(2,4,1)
 imagesc(corr(corrmats_mean'))
